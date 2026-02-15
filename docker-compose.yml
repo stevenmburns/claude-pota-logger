@@ -1,0 +1,23 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: pota
+      POSTGRES_USER: pota
+      POSTGRES_PASSWORD: pota
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://pota:pota@db:5432/pota
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
