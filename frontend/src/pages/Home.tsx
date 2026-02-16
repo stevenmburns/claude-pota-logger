@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { getTodaySession, getSession, getSettings } from "../api";
-import { HuntSessionDetail } from "../types";
+import { HuntSessionDetail, Spot } from "../types";
 import SettingsForm from "../components/SettingsForm";
+import SpotsList from "../components/SpotsList";
 import QSOForm from "../components/QSOForm";
 import QSOTable from "../components/QSOTable";
 import ExportButton from "../components/ExportButton";
@@ -10,6 +11,7 @@ export default function Home() {
   const [operatorCallsign, setOperatorCallsign] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<HuntSessionDetail | null>(null);
+  const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
 
   useEffect(() => {
     getSettings()
@@ -56,7 +58,8 @@ export default function Home() {
             <span>{session.qsos.length} QSOs</span>
             <ExportButton sessionId={session.id} />
           </div>
-          <QSOForm sessionId={session.id} onCreated={loadSession} />
+          <SpotsList onSelect={setSelectedSpot} />
+          <QSOForm sessionId={session.id} onCreated={loadSession} selectedSpot={selectedSpot} />
           <QSOTable sessionId={session.id} qsos={session.qsos} onDeleted={loadSession} />
         </>
       )}

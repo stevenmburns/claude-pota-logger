@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine
 from app.models import Base
-from app.routers import export, hunt_sessions, parks, qsos, settings
+from app.routers import export, hunt_sessions, parks, qsos, settings, spots
 
 
 @asynccontextmanager
@@ -30,3 +30,4 @@ app.include_router(qsos.router)
 app.include_router(export.router)
 app.include_router(settings.router)
 app.include_router(parks.router)
+app.include_router(spots.router)

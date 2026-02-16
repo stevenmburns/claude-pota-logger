@@ -1,4 +1,4 @@
-import { HuntSessionDetail, QSO, QSOCreate, Settings, ParkInfo } from "./types";
+import { HuntSessionDetail, QSO, QSOCreate, Settings, ParkInfo, Spot } from "./types";
 
 const BASE = "/api";
 
@@ -61,4 +61,8 @@ export async function updateSettings(operator_callsign: string): Promise<Setting
 
 export async function fetchParkInfo(parkRef: string): Promise<ParkInfo> {
   return request(`/parks/${parkRef}`);
+}
+
+export async function getActiveSpots(): Promise<Spot[]> {
+  return request("/spots");
 }
