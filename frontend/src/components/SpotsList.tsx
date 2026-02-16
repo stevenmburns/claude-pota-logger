@@ -60,6 +60,12 @@ export default function SpotsList({ onSelect }: Props) {
     if (bandFilter !== "All" && kHzToBand(s.frequency) !== bandFilter) return false;
     if (modeFilter !== "All" && s.mode.toUpperCase() !== modeFilter) return false;
     return true;
+  }).sort((a, b) => {
+    const freqDiff = parseFloat(a.frequency) - parseFloat(b.frequency);
+    if (freqDiff !== 0) return freqDiff;
+    const actCmp = a.activator.localeCompare(b.activator);
+    if (actCmp !== 0) return actCmp;
+    return new Date(a.spotTime).getTime() - new Date(b.spotTime).getTime();
   });
 
   return (
