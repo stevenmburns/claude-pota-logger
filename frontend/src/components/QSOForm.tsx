@@ -133,27 +133,12 @@ export default function QSOForm({ sessionId, onCreated, selectedSpot }: Props) {
     <div>
       <form onSubmit={handleSubmit} style={{ display: "flex", gap: "0.5rem", alignItems: "end", flexWrap: "wrap" }}>
         <label>
-          Park Ref
-          <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-            <input
-              value={parkRef}
-              onChange={(e) => handleParkRefChange(e.target.value)}
-              placeholder="K-0001"
-              required
-              autoFocus
-              style={{ width: "6rem" }}
-            />
-            {parkName && <span style={{ fontSize: "0.8rem", color: "#16a34a" }}>{parkName}</span>}
-          </div>
-        </label>
-        <label>
-          Callsign
-          <input
-            value={callsign}
-            onChange={(e) => setCallsign(e.target.value)}
-            placeholder="W1XYZ"
-            required
-          />
+          Band
+          <select value={band} onChange={(e) => setBand(e.target.value)}>
+            {["160m","80m","60m","40m","30m","20m","17m","15m","12m","10m","6m","2m"].map(b =>
+              <option key={b} value={b}>{b}</option>
+            )}
+          </select>
         </label>
         <label>
           Freq (MHz)
@@ -167,14 +152,6 @@ export default function QSOForm({ sessionId, onCreated, selectedSpot }: Props) {
           />
         </label>
         <label>
-          Band
-          <select value={band} onChange={(e) => setBand(e.target.value)}>
-            {["160m","80m","60m","40m","30m","20m","17m","15m","12m","10m","6m","2m"].map(b =>
-              <option key={b} value={b}>{b}</option>
-            )}
-          </select>
-        </label>
-        <label>
           Mode
           <select value={mode} onChange={(e) => handleModeChange(e.target.value)}>
             {["SSB","CW","FT8","FT4","AM","FM","RTTY"].map(m =>
@@ -183,12 +160,35 @@ export default function QSOForm({ sessionId, onCreated, selectedSpot }: Props) {
           </select>
         </label>
         <label>
+          Callsign
+          <input
+            value={callsign}
+            onChange={(e) => setCallsign(e.target.value)}
+            placeholder="W1XYZ"
+            required
+          />
+        </label>
+        <label>
           RST Sent
           <input value={rstSent} onChange={(e) => setRstSent(e.target.value)} style={{ width: "4rem" }} />
         </label>
         <label>
           RST Rcvd
           <input value={rstRecv} onChange={(e) => setRstRecv(e.target.value)} style={{ width: "4rem" }} />
+        </label>
+        <label>
+          Park Ref
+          <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+            <input
+              value={parkRef}
+              onChange={(e) => handleParkRefChange(e.target.value)}
+              placeholder="K-0001"
+              required
+              autoFocus
+              style={{ width: "6rem" }}
+            />
+            {parkName && <span style={{ fontSize: "0.8rem", color: "#16a34a" }}>{parkName}</span>}
+          </div>
         </label>
         <button type="submit">Log QSO</button>
       </form>
