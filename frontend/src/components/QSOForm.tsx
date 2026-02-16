@@ -149,6 +149,7 @@ export default function QSOForm({ sessionId, onCreated, selectedSpot }: Props) {
             onChange={(e) => handleFreqChange(e.target.value)}
             placeholder="14.250"
             required
+            style={{ width: "7rem" }}
           />
         </label>
         <label>
@@ -166,6 +167,7 @@ export default function QSOForm({ sessionId, onCreated, selectedSpot }: Props) {
             onChange={(e) => setCallsign(e.target.value)}
             placeholder="W1XYZ"
             required
+            style={{ width: "7rem" }}
           />
         </label>
         <label>
