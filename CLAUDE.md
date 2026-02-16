@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-POTA Logger — a Parks on the Air (POTA) logging application with a FastAPI backend, PostgreSQL database, and React frontend.
+POTA Hunter Logger — a Parks on the Air (POTA) **hunter** logging application with a FastAPI backend, PostgreSQL database, and React frontend. Designed for logging contacts with park activators from home (not for activating parks).
 
 ## Architecture
 
@@ -19,14 +19,16 @@ POTA Logger — a Parks on the Air (POTA) logging application with a FastAPI bac
 backend/
   app/
     main.py           # FastAPI app entry point, CORS config, lifespan (auto-creates tables)
-    models.py          # SQLAlchemy ORM models (Activation, QSO)
+    models.py          # SQLAlchemy ORM models (HuntSession, QSO, Settings)
     schemas.py         # Pydantic v2 request/response schemas
     database.py        # Async engine + session factory
-    adif.py            # ADIF v3.1.4 file generation
+    adif.py            # ADIF v3.1.4 file generation (hunter format: SIG/SIG_INFO per QSO)
     routers/
-      activations.py   # Activation CRUD endpoints
-      qsos.py          # QSO CRUD endpoints
+      hunt_sessions.py # Hunt session endpoints (auto-create today's, list, get)
+      qsos.py          # QSO CRUD endpoints (409 on duplicate call/park/band)
       export.py        # ADIF export endpoint
+      settings.py      # Operator callsign settings (singleton)
+      parks.py         # Proxy to POTA park API for park name lookup
   Dockerfile
   requirements.txt
 
@@ -35,14 +37,20 @@ frontend/
     App.tsx            # Root component with global styles
     api.ts             # Fetch wrapper for backend calls
     types.ts           # TypeScript types matching backend schemas
-    pages/Home.tsx     # Main page (activation selector + QSO logging view)
+    pages/Home.tsx     # Main page (auto-loads today's session, settings check)
     components/
-      ActivationForm.tsx  # Start/select activations
-      QSOForm.tsx         # Log a QSO (auto band-from-freq, mode-based RST defaults)
-      QSOTable.tsx        # List/delete QSOs
-      ExportButton.tsx    # ADIF download
+      SettingsForm.tsx  # Operator callsign setup (shown on first use)
+      QSOForm.tsx       # Log a QSO (park ref with POTA API lookup, auto band-from-freq)
+      QSOTable.tsx      # List/delete QSOs (includes Park column)
+      ExportButton.tsx  # ADIF download
   vite.config.ts      # Proxies /api to localhost:8000
 ```
+
+## Data Model
+
+- **HuntSession**: One per day (unique `session_date`), auto-created on first visit
+- **QSO**: Linked to a hunt session; includes `park_reference` per contact. Unique constraint on `(hunt_session_id, callsign, park_reference, band)` prevents duplicate logs
+- **Settings**: Singleton storing `operator_callsign` (global, not per-session)
 
 ## Development Commands
 
@@ -59,19 +67,27 @@ docker compose up -d --build
 
 # Stop everything
 docker compose down
+
+# Reset database (drops all data, recreates tables on next startup)
+docker compose down
+docker volume rm claude-pota-logger_pgdata
+docker compose up -d --build
 ```
 
 ## API Endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `/api/activations` | Create activation |
-| GET | `/api/activations` | List activations |
-| GET | `/api/activations/{id}` | Get activation with QSOs |
-| POST | `/api/activations/{id}/qsos` | Log a QSO |
-| GET | `/api/activations/{id}/qsos` | List QSOs |
-| DELETE | `/api/activations/{id}/qsos/{qso_id}` | Delete a QSO |
-| GET | `/api/activations/{id}/export` | Download ADIF file |
+| GET | `/api/hunt-sessions/today` | Auto-create or return today's session |
+| GET | `/api/hunt-sessions` | List all sessions |
+| GET | `/api/hunt-sessions/{id}` | Get session with QSOs |
+| POST | `/api/hunt-sessions/{id}/qsos` | Log a QSO (409 on duplicate) |
+| GET | `/api/hunt-sessions/{id}/qsos` | List QSOs |
+| DELETE | `/api/hunt-sessions/{id}/qsos/{qso_id}` | Delete a QSO |
+| GET | `/api/hunt-sessions/{id}/export` | Download ADIF file |
+| GET | `/api/settings` | Get operator settings (auto-creates default) |
+| PUT | `/api/settings` | Update operator callsign |
+| GET | `/api/parks/{park_ref}` | Proxy to POTA park API (returns park name/location) |
 
 ## Key Details
 
@@ -79,3 +95,6 @@ docker compose down
 - Tables are auto-created on backend startup (no migrations yet)
 - Node 20 is required; use `nvm use 20` (nvm is installed)
 - Database credentials: `pota/pota` on `localhost:5432`, database `pota`
+- First visit prompts for operator callsign; stored globally in Settings table
+- Park reference input does a debounced lookup against the POTA API to show park names
+- ADIF export uses hunter format: `SIG=POTA`, `SIG_INFO=<hunted park>`, `STATION_CALLSIGN=<operator>`
