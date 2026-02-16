@@ -1,12 +1,12 @@
 import { exportUrl } from "../api";
 
 interface Props {
-  activationId: string;
+  sessionId: string;
 }
 
-export default function ExportButton({ activationId }: Props) {
+export default function ExportButton({ sessionId }: Props) {
   return (
-    <a href={exportUrl(activationId)} download>
+    <a href={exportUrl(sessionId)} download>
       <button type="button">Export ADIF</button>
     </a>
   );

@@ -2,14 +2,14 @@ import { deleteQSO } from "../api";
 import { QSO } from "../types";
 
 interface Props {
-  activationId: string;
+  sessionId: string;
   qsos: QSO[];
   onDeleted: () => void;
 }
 
-export default function QSOTable({ activationId, qsos, onDeleted }: Props) {
+export default function QSOTable({ sessionId, qsos, onDeleted }: Props) {
   const handleDelete = async (qsoId: string) => {
-    await deleteQSO(activationId, qsoId);
+    await deleteQSO(sessionId, qsoId);
     onDeleted();
   };
 
@@ -23,6 +23,7 @@ export default function QSOTable({ activationId, qsos, onDeleted }: Props) {
         <tr>
           <th>#</th>
           <th>UTC</th>
+          <th>Park</th>
           <th>Callsign</th>
           <th>Freq</th>
           <th>Band</th>
@@ -37,6 +38,7 @@ export default function QSOTable({ activationId, qsos, onDeleted }: Props) {
           <tr key={q.id}>
             <td>{i + 1}</td>
             <td>{new Date(q.timestamp).toLocaleTimeString("en-GB", { timeZone: "UTC" })}</td>
+            <td>{q.park_reference}</td>
             <td>{q.callsign}</td>
             <td>{q.frequency}</td>
             <td>{q.band}</td>
