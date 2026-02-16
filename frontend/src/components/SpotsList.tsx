@@ -89,26 +89,26 @@ export default function SpotsList({ onSelect }: Props) {
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
             <thead>
               <tr style={{ background: "#f5f5f5", position: "sticky", top: 0 }}>
-                <th style={thStyle}>Park</th>
-                <th style={thStyle}>Name</th>
-                <th style={thStyle}>Activator</th>
+                <th style={thStyle}>Time</th>
                 <th style={thStyle}>Freq (MHz)</th>
                 <th style={thStyle}>Mode</th>
+                <th style={thStyle}>Activator</th>
                 <th style={thStyle}>Location</th>
-                <th style={thStyle}>Time</th>
+                <th style={thStyle}>Park</th>
+                <th style={thStyle}>Name</th>
                 <th style={thStyle}></th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((spot) => (
                 <tr key={spot.spotId} style={{ borderBottom: "1px solid #eee" }}>
-                  <td style={tdStyle}>{spot.reference}</td>
-                  <td style={tdStyle}>{spot.name}</td>
-                  <td style={tdStyle}>{spot.activator}</td>
+                  <td style={tdStyle}>{new Date(spot.spotTime).toLocaleTimeString()}</td>
                   <td style={tdStyle}>{kHzToMHz(spot.frequency)}</td>
                   <td style={tdStyle}>{spot.mode}</td>
+                  <td style={tdStyle}>{spot.activator}</td>
                   <td style={tdStyle}>{spot.locationDesc}</td>
-                  <td style={tdStyle}>{new Date(spot.spotTime).toLocaleTimeString()}</td>
+                  <td style={tdStyle}>{spot.reference}</td>
+                  <td style={tdStyle}>{spot.name}</td>
                   <td style={tdStyle}>
                     <button
                       type="button"
