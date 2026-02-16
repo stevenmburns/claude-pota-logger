@@ -23,13 +23,13 @@ export default function QSOTable({ sessionId, qsos, onDeleted }: Props) {
         <tr>
           <th>#</th>
           <th>UTC</th>
-          <th>Park</th>
-          <th>Callsign</th>
-          <th>Freq</th>
           <th>Band</th>
+          <th>Freq</th>
           <th>Mode</th>
+          <th>Callsign</th>
           <th>RST S</th>
           <th>RST R</th>
+          <th>Park</th>
           <th></th>
         </tr>
       </thead>
@@ -38,13 +38,13 @@ export default function QSOTable({ sessionId, qsos, onDeleted }: Props) {
           <tr key={q.id}>
             <td>{i + 1}</td>
             <td>{new Date(q.timestamp).toLocaleTimeString("en-GB", { timeZone: "UTC" })}</td>
-            <td>{q.park_reference}</td>
-            <td>{q.callsign}</td>
-            <td>{q.frequency}</td>
             <td>{q.band}</td>
+            <td>{q.frequency}</td>
             <td>{q.mode}</td>
+            <td>{q.callsign}</td>
             <td>{q.rst_sent}</td>
             <td>{q.rst_received}</td>
+            <td>{q.park_reference}</td>
             <td>
               <button onClick={() => handleDelete(q.id)} title="Delete">X</button>
             </td>
