@@ -41,10 +41,10 @@ frontend/
     pages/Home.tsx     # Main page (auto-loads today's session, settings check)
     components/
       SettingsForm.tsx  # Operator callsign setup (shown on first use)
-      QSOForm.tsx       # Log a QSO (park ref with POTA API lookup, auto band-from-freq)
-      QSOTable.tsx      # List/delete QSOs (includes Park column)
+      QSOForm.tsx       # Log a QSO; fields: Band, Freq, Mode, Callsign, RST Sent, RST Rcvd, Park Ref (with POTA API lookup, auto band-from-freq)
+      QSOTable.tsx      # List/delete QSOs; columns: #, UTC, Band, Freq, Mode, Callsign, RST S, RST R, Park
       ExportButton.tsx  # ADIF download
-      SpotsList.tsx     # Browse active POTA spots with band/mode filtering; click to fill QSO form
+      SpotsList.tsx     # Browse active POTA spots; columns: Time, Freq, Mode, Activator, Location, Park, Name; sorted by freq/activator/time; band/mode filtering; click to fill QSO form
   vite.config.ts      # Proxies /api to localhost:8000
 ```
 
