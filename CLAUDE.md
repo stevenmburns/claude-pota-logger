@@ -29,6 +29,7 @@ backend/
       export.py        # ADIF export endpoint
       settings.py      # Operator callsign settings (singleton)
       parks.py         # Proxy to POTA park API for park name lookup
+      spots.py         # Proxy to POTA activator spots API (real-time)
   Dockerfile
   requirements.txt
 
@@ -43,6 +44,7 @@ frontend/
       QSOForm.tsx       # Log a QSO (park ref with POTA API lookup, auto band-from-freq)
       QSOTable.tsx      # List/delete QSOs (includes Park column)
       ExportButton.tsx  # ADIF download
+      SpotsList.tsx     # Browse active POTA spots with band/mode filtering; click to fill QSO form
   vite.config.ts      # Proxies /api to localhost:8000
 ```
 
@@ -88,6 +90,7 @@ docker compose up -d --build
 | GET | `/api/settings` | Get operator settings (auto-creates default) |
 | PUT | `/api/settings` | Update operator callsign |
 | GET | `/api/parks/{park_ref}` | Proxy to POTA park API (returns park name/location) |
+| GET | `/api/spots` | Proxy to POTA activator spots API (real-time active activators) |
 
 ## Key Details
 
@@ -98,3 +101,4 @@ docker compose up -d --build
 - First visit prompts for operator callsign; stored globally in Settings table
 - Park reference input does a debounced lookup against the POTA API to show park names
 - ADIF export uses hunter format: `SIG=POTA`, `SIG_INFO=<hunted park>`, `STATION_CALLSIGN=<operator>`
+- Active spots panel fetches from POTA API on load and auto-refreshes every 60 seconds; click a spot to auto-fill the QSO form
