@@ -45,3 +45,15 @@ export interface ParkInfo {
   name: string;
   locationDesc: string;
 }
+
+export interface Spot {
+  spotId: number;
+  activator: string;
+  reference: string;
+  name: string;
+  locationDesc: string;
+  frequency: string;
+  mode: string;
+  spotTime: string;
+  comments: string;
+}

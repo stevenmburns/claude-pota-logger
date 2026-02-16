@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { createQSO, fetchParkInfo } from "../api";
-import { QSOCreate } from "../types";
+import { QSOCreate, Spot } from "../types";
 
 const FREQ_TO_BAND: Record<string, string> = {
   "1.8": "160m", "3.5": "80m", "5.3": "60m", "7": "40m",
@@ -28,9 +28,10 @@ function defaultRst(mode: string): string {
 interface Props {
   sessionId: string;
   onCreated: () => void;
+  selectedSpot?: Spot | null;
 }
 
-export default function QSOForm({ sessionId, onCreated }: Props) {
+export default function QSOForm({ sessionId, onCreated, selectedSpot }: Props) {
   const [parkRef, setParkRef] = useState("");
   const [parkName, setParkName] = useState("");
   const [callsign, setCallsign] = useState("");
@@ -61,6 +62,28 @@ export default function QSOForm({ sessionId, onCreated }: Props) {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (!selectedSpot) return;
+    const ref = selectedSpot.reference;
+    setParkRef(ref);
+    setCallsign(selectedSpot.activator);
+    const mhz = parseFloat(selectedSpot.frequency) / 1000;
+    if (!isNaN(mhz)) {
+      setFrequency(mhz.toFixed(4));
+      const b = freqToBand(mhz);
+      if (b) setBand(b);
+    }
+    const m = selectedSpot.mode.toUpperCase();
+    setMode(m);
+    const rst = defaultRst(m);
+    setRstSent(rst);
+    setRstRecv(rst);
+    setParkName("");
+    fetchParkInfo(ref)
+      .then((info) => setParkName(info.name))
+      .catch(() => setParkName(""));
+  }, [selectedSpot]);
 
   const handleFreqChange = (val: string) => {
     setFrequency(val);
