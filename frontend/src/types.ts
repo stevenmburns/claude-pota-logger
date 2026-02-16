@@ -1,18 +1,17 @@
-export interface Activation {
+export interface HuntSession {
   id: string;
-  park_reference: string;
-  operator_callsign: string;
-  start_time: string;
+  session_date: string;
   created_at: string;
 }
 
-export interface ActivationDetail extends Activation {
+export interface HuntSessionDetail extends HuntSession {
   qsos: QSO[];
 }
 
 export interface QSO {
   id: string;
-  activation_id: string;
+  hunt_session_id: string;
+  park_reference: string;
   callsign: string;
   frequency: number;
   band: string;
@@ -24,6 +23,7 @@ export interface QSO {
 }
 
 export interface QSOCreate {
+  park_reference: string;
   callsign: string;
   frequency: number;
   band: string;
@@ -31,4 +31,17 @@ export interface QSOCreate {
   rst_sent: string;
   rst_received: string;
   timestamp: string;
+}
+
+export interface Settings {
+  id: string;
+  operator_callsign: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ParkInfo {
+  reference: string;
+  name: string;
+  locationDesc: string;
 }

@@ -1,49 +1,65 @@
 import { useEffect, useState, useCallback } from "react";
-import { getActivation } from "../api";
-import { ActivationDetail } from "../types";
-import ActivationForm from "../components/ActivationForm";
+import { getTodaySession, getSession, getSettings } from "../api";
+import { HuntSessionDetail } from "../types";
+import SettingsForm from "../components/SettingsForm";
 import QSOForm from "../components/QSOForm";
 import QSOTable from "../components/QSOTable";
 import ExportButton from "../components/ExportButton";
 
 export default function Home() {
-  const [activationId, setActivationId] = useState<string | null>(null);
-  const [activation, setActivation] = useState<ActivationDetail | null>(null);
-
-  const refresh = useCallback(() => {
-    if (activationId) {
-      getActivation(activationId).then(setActivation).catch(console.error);
-    }
-  }, [activationId]);
+  const [operatorCallsign, setOperatorCallsign] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState<HuntSessionDetail | null>(null);
 
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    getSettings()
+      .then((s) => {
+        setOperatorCallsign(s.operator_callsign || null);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
-  if (!activationId || !activation) {
+  const loadSession = useCallback(() => {
+    if (session) {
+      getSession(session.id).then(setSession).catch(console.error);
+    } else {
+      getTodaySession().then(setSession).catch(console.error);
+    }
+  }, [session]);
+
+  useEffect(() => {
+    if (operatorCallsign) {
+      getTodaySession().then(setSession).catch(console.error);
+    }
+  }, [operatorCallsign]);
+
+  if (loading) return <p>Loading...</p>;
+
+  if (!operatorCallsign) {
     return (
       <div>
-        <h1>POTA Logger</h1>
-        <ActivationForm onSelect={setActivationId} />
+        <h1>POTA Hunter Logger</h1>
+        <SettingsForm onSaved={setOperatorCallsign} />
       </div>
     );
   }
 
   return (
     <div>
-      <h1>POTA Logger</h1>
-      <div style={{ display: "flex", gap: "1rem", alignItems: "center", marginBottom: "1rem" }}>
-        <strong>{activation.park_reference}</strong>
-        <span>{activation.operator_callsign}</span>
-        <span>{new Date(activation.start_time).toLocaleDateString()}</span>
-        <span>{activation.qsos.length} QSOs</span>
-        <ExportButton activationId={activationId} />
-        <button onClick={() => { setActivationId(null); setActivation(null); }}>
-          Back
-        </button>
-      </div>
-      <QSOForm activationId={activationId} onCreated={refresh} />
-      <QSOTable activationId={activationId} qsos={activation.qsos} onDeleted={refresh} />
+      <h1>POTA Hunter Logger</h1>
+      {session && (
+        <>
+          <div style={{ display: "flex", gap: "1rem", alignItems: "center", marginBottom: "1rem" }}>
+            <strong>{session.session_date}</strong>
+            <span>{operatorCallsign}</span>
+            <span>{session.qsos.length} QSOs</span>
+            <ExportButton sessionId={session.id} />
+          </div>
+          <QSOForm sessionId={session.id} onCreated={loadSession} />
+          <QSOTable sessionId={session.id} qsos={session.qsos} onDeleted={loadSession} />
+        </>
+      )}
     </div>
   );
 }

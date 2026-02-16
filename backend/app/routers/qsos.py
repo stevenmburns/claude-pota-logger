@@ -2,52 +2,60 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import Activation, QSO
+from app.models import HuntSession, QSO
 from app.schemas import QSOCreate, QSOResponse
 
-router = APIRouter(prefix="/api/activations/{activation_id}/qsos", tags=["qsos"])
+router = APIRouter(prefix="/api/hunt-sessions/{session_id}/qsos", tags=["qsos"])
 
 
-async def _get_activation(activation_id: uuid.UUID, db: AsyncSession) -> Activation:
+async def _get_session(session_id: uuid.UUID, db: AsyncSession) -> HuntSession:
     result = await db.execute(
-        select(Activation).where(Activation.id == activation_id)
+        select(HuntSession).where(HuntSession.id == session_id)
     )
-    activation = result.scalar_one_or_none()
-    if not activation:
-        raise HTTPException(status_code=404, detail="Activation not found")
-    return activation
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=404, detail="Hunt session not found")
+    return session
 
 
 @router.post("", response_model=QSOResponse, status_code=201)
 async def create_qso(
-    activation_id: uuid.UUID, data: QSOCreate, db: AsyncSession = Depends(get_db)
+    session_id: uuid.UUID, data: QSOCreate, db: AsyncSession = Depends(get_db)
 ):
-    await _get_activation(activation_id, db)
-    qso = QSO(activation_id=activation_id, **data.model_dump())
+    await _get_session(session_id, db)
+    qso = QSO(hunt_session_id=session_id, **data.model_dump())
     db.add(qso)
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail=f"Already logged {data.callsign.upper()} at {data.park_reference.upper()} on {data.band}",
+        )
     await db.refresh(qso)
     return qso
 
 
 @router.get("", response_model=list[QSOResponse])
-async def list_qsos(activation_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    await _get_activation(activation_id, db)
+async def list_qsos(session_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    await _get_session(session_id, db)
     result = await db.execute(
-        select(QSO).where(QSO.activation_id == activation_id).order_by(QSO.timestamp)
+        select(QSO).where(QSO.hunt_session_id == session_id).order_by(QSO.timestamp)
     )
     return result.scalars().all()
 
 
 @router.delete("/{qso_id}", status_code=204)
 async def delete_qso(
-    activation_id: uuid.UUID, qso_id: uuid.UUID, db: AsyncSession = Depends(get_db)
+    session_id: uuid.UUID, qso_id: uuid.UUID, db: AsyncSession = Depends(get_db)
 ):
     result = await db.execute(
-        select(QSO).where(QSO.id == qso_id, QSO.activation_id == activation_id)
+        select(QSO).where(QSO.id == qso_id, QSO.hunt_session_id == session_id)
     )
     qso = result.scalar_one_or_none()
     if not qso:

@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine
 from app.models import Base
-from app.routers import activations, export, qsos
+from app.routers import export, hunt_sessions, parks, qsos, settings
 
 
 @asynccontextmanager
@@ -25,6 +25,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(activations.router)
+app.include_router(hunt_sessions.router)
 app.include_router(qsos.router)
 app.include_router(export.router)
+app.include_router(settings.router)
+app.include_router(parks.router)
