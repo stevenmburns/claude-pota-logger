@@ -4,8 +4,8 @@ A Parks on the Air (POTA) **hunter** logging application for logging contacts wi
 
 ## Features
 
-- **Active Spots Browser** — real-time feed of active POTA activators with band/mode filtering; click a spot to auto-fill the QSO form
-- **QSO Logging** — log contacts with park reference, callsign, frequency (auto-detects band), mode, and RST
+- **Active Spots Browser** — real-time feed of active POTA activators (columns: Time, Freq, Mode, Activator, Location, Park, Name) sorted by freq/activator/time with band/mode filtering; click a spot to auto-fill the QSO form
+- **QSO Logging** — log contacts with fields: Band, Freq, Mode, Callsign, RST Sent, RST Rcvd, Park Ref (auto-detects band from frequency); QSO table columns: #, UTC, Band, Freq, Mode, Callsign, RST S, RST R, Park
 - **Park Lookup** — debounced lookup against the POTA API shows park names as you type
 - **Duplicate Prevention** — unique constraint on callsign + park + band per session (409 on duplicates)
 - **ADIF Export** — download contacts in ADIF v3.1.4 hunter format (`SIG=POTA`, `SIG_INFO` per QSO)
