@@ -42,6 +42,7 @@ export default function QSOForm({ sessionId, onCreated, selectedSpot }: Props) {
   const [rstRecv, setRstRecv] = useState("59");
   const [error, setError] = useState("");
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const rstSentRef = useRef<HTMLInputElement>(null);
 
   const handleParkRefChange = (val: string) => {
     setParkRef(val);
@@ -83,6 +84,8 @@ export default function QSOForm({ sessionId, onCreated, selectedSpot }: Props) {
     fetchParkInfo(ref)
       .then((info) => setParkName(info.name))
       .catch(() => setParkName(""));
+    rstSentRef.current?.focus();
+    rstSentRef.current?.select();
   }, [selectedSpot]);
 
   const handleFreqChange = (val: string) => {
@@ -172,7 +175,7 @@ export default function QSOForm({ sessionId, onCreated, selectedSpot }: Props) {
         </label>
         <label>
           RST Sent
-          <input value={rstSent} onChange={(e) => setRstSent(e.target.value)} style={{ width: "4rem" }} />
+          <input ref={rstSentRef} value={rstSent} onChange={(e) => setRstSent(e.target.value)} style={{ width: "4rem" }} />
         </label>
         <label>
           RST Rcvd

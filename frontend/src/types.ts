@@ -56,4 +56,5 @@ export interface Spot {
   mode: string;
   spotTime: string;
   comments: string;
+  hunted?: boolean;
 }

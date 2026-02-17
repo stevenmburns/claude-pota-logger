@@ -1,7 +1,14 @@
+from datetime import date, timezone
 from typing import Optional
 
 import httpx
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
+from ..database import get_db
+from ..models import HuntSession
 
 router = APIRouter(prefix="/api/spots", tags=["spots"])
 
@@ -34,6 +41,7 @@ def khz_to_band(khz: str) -> str:
 async def get_active_spots(
     band: Optional[str] = Query(None),
     mode: Optional[str] = Query(None),
+    db: AsyncSession = Depends(get_db),
 ):
     async with httpx.AsyncClient() as client:
         resp = await client.get("https://api.pota.app/spot/activator", timeout=10.0)
@@ -45,5 +53,28 @@ async def get_active_spots(
         spots = [s for s in spots if khz_to_band(s.get("frequency", "")) == band]
     if mode and mode != "All":
         spots = [s for s in spots if s.get("mode", "").upper() == mode.upper()]
+
+    # Build set of hunted (callsign, park, band) from today's QSOs
+    hunted: set[tuple[str, str, str]] = set()
+    today = date.today()
+    result = await db.execute(
+        select(HuntSession)
+        .options(selectinload(HuntSession.qsos))
+        .where(HuntSession.session_date == today)
+    )
+    session = result.scalar_one_or_none()
+    if session:
+        for qso in session.qsos:
+            hunted.add((qso.callsign.upper(), qso.park_reference.upper(), qso.band.upper()))
+
+    # Annotate each spot with hunted flag
+    for spot in spots:
+        spot_band = khz_to_band(spot.get("frequency", "")).upper()
+        key = (
+            spot.get("activator", "").upper(),
+            spot.get("reference", "").upper(),
+            spot_band,
+        )
+        spot["hunted"] = key in hunted
 
     return spots

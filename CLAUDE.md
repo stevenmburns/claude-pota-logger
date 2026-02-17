@@ -29,7 +29,7 @@ backend/
       export.py        # ADIF export endpoint
       settings.py      # Operator callsign settings (singleton)
       parks.py         # Proxy to POTA park API for park name lookup
-      spots.py         # Proxy to POTA activator spots API (real-time, server-side band/mode filtering)
+      spots.py         # Proxy to POTA activator spots API (real-time, server-side band/mode filtering, hunted flag from today's QSOs)
   Dockerfile
   requirements.txt
 
@@ -44,7 +44,7 @@ frontend/
       QSOForm.tsx       # Log a QSO; fields: Band, Freq, Mode, Callsign, RST Sent, RST Rcvd, Park Ref (with POTA API lookup, auto band-from-freq)
       QSOTable.tsx      # List/delete QSOs; columns: #, UTC, Band, Freq, Mode, Callsign, RST S, RST R, Park
       ExportButton.tsx  # ADIF download
-      SpotsList.tsx     # Browse active POTA spots; columns: UTC, Freq, Mode, Activator, Location, Park, Name; sorted by freq/activator/time; band/mode filter dropdowns trigger backend re-fetch; click to fill QSO form
+      SpotsList.tsx     # Browse active POTA spots; columns: Hunted, UTC, Freq, Mode, Activator, Location, Park, Name; sorted by freq/activator/time; band/mode filter dropdowns trigger backend re-fetch; click row to fill QSO form and focus RST Sent; hunted spots shown with checkmark and green background; refreshes on QSO create/delete
   vite.config.ts      # Proxies /api to localhost:8000
 ```
 
@@ -90,7 +90,7 @@ docker compose up -d --build
 | GET | `/api/settings` | Get operator settings (auto-creates default) |
 | PUT | `/api/settings` | Update operator callsign |
 | GET | `/api/parks/{park_ref}` | Proxy to POTA park API (returns park name/location) |
-| GET | `/api/spots` | Proxy to POTA activator spots API; optional `band` and `mode` query params for server-side filtering |
+| GET | `/api/spots` | Proxy to POTA activator spots API; optional `band` and `mode` query params for server-side filtering; each spot includes `hunted` flag based on today's QSOs |
 
 ## Key Details
 
@@ -101,4 +101,5 @@ docker compose up -d --build
 - First visit prompts for operator callsign; stored globally in Settings table
 - Park reference input does a debounced lookup against the POTA API to show park names
 - ADIF export uses hunter format: `SIG=POTA`, `SIG_INFO=<hunted park>`, `STATION_CALLSIGN=<operator>`
-- Active spots panel fetches from POTA API on load and auto-refreshes every 60 seconds; band/mode filtering is done server-side (backend converts kHz to band); click a spot to auto-fill the QSO form
+- Active spots panel fetches from POTA API on load and auto-refreshes every 60 seconds; band/mode filtering is done server-side (backend converts kHz to band); click a spot row to auto-fill the QSO form and focus RST Sent input
+- Spots are annotated with a `hunted` flag (backend matches activator/park/band against today's QSOs); hunted spots display a checkmark and green background; spots list refreshes immediately after logging or deleting a QSO

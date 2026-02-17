@@ -13,9 +13,10 @@ function kHzToMHz(kHz: string): string {
 
 interface Props {
   onSelect: (spot: Spot) => void;
+  refreshToken?: number;
 }
 
-export default function SpotsList({ onSelect }: Props) {
+export default function SpotsList({ onSelect, refreshToken }: Props) {
   const [spots, setSpots] = useState<Spot[]>([]);
   const [loading, setLoading] = useState(true);
   const [bandFilter, setBandFilter] = useState("All");
@@ -35,7 +36,7 @@ export default function SpotsList({ onSelect }: Props) {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [bandFilter, modeFilter]);
+  }, [bandFilter, modeFilter, refreshToken]);
 
   const filtered = spots.slice().sort((a, b) => {
     const freqDiff = parseFloat(a.frequency) - parseFloat(b.frequency);
@@ -47,6 +48,7 @@ export default function SpotsList({ onSelect }: Props) {
 
   return (
     <div style={{ marginBottom: "1.5rem" }}>
+      <style>{`.spot-row:hover { filter: brightness(0.92); }`}</style>
       <div style={{ display: "flex", gap: "1rem", alignItems: "center", marginBottom: "0.5rem" }}>
         <h3 style={{ margin: 0 }}>Active Spots</h3>
         <label>
@@ -72,6 +74,7 @@ export default function SpotsList({ onSelect }: Props) {
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
             <thead>
               <tr style={{ background: "#f5f5f5", position: "sticky", top: 0 }}>
+                <th style={thStyle}></th>
                 <th style={thStyle}>UTC</th>
                 <th style={thStyle}>Freq (MHz)</th>
                 <th style={thStyle}>Mode</th>
@@ -79,12 +82,17 @@ export default function SpotsList({ onSelect }: Props) {
                 <th style={thStyle}>Location</th>
                 <th style={thStyle}>Park</th>
                 <th style={thStyle}>Name</th>
-                <th style={thStyle}></th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((spot) => (
-                <tr key={spot.spotId} style={{ borderBottom: "1px solid #eee" }}>
+                <tr
+                  key={spot.spotId}
+                  onClick={() => onSelect(spot)}
+                  className="spot-row"
+                  style={{ borderBottom: "1px solid #eee", background: spot.hunted ? "#e6f4ea" : "#ffffff", opacity: spot.hunted ? 0.7 : 1, cursor: "pointer" }}
+                >
+                  <td style={tdStyle}>{spot.hunted ? "\u2714" : ""}</td>
                   <td style={tdStyle}>{new Date(spot.spotTime + "Z").toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: false })}</td>
                   <td style={tdStyle}>{kHzToMHz(spot.frequency)}</td>
                   <td style={tdStyle}>{spot.mode}</td>
@@ -92,15 +100,6 @@ export default function SpotsList({ onSelect }: Props) {
                   <td style={tdStyle}>{spot.locationDesc}</td>
                   <td style={tdStyle}>{spot.reference}</td>
                   <td style={tdStyle}>{spot.name}</td>
-                  <td style={tdStyle}>
-                    <button
-                      type="button"
-                      onClick={() => onSelect(spot)}
-                      style={{ padding: "0.15rem 0.5rem", fontSize: "0.8rem" }}
-                    >
-                      Select
-                    </button>
-                  </td>
                 </tr>
               ))}
               {filtered.length === 0 && (
