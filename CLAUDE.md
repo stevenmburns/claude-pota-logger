@@ -99,6 +99,17 @@ docker compose up -d --build
 | GET | `/api/parks/{park_ref}` | Proxy to POTA park API (returns park name/location) |
 | GET | `/api/spots` | Proxy to POTA activator spots API; optional `band` and `mode` query params for server-side filtering; each spot includes `hunted` flag based on today's QSOs |
 
+## Git Workflow
+
+- Always create feature branches for changes — never push directly to main unless explicitly asked.
+- Use the `/pr` skill to automate the full PR lifecycle (branch, commit, push, create PR, merge, cleanup).
+- Commit messages should be descriptive and conventional (e.g., "Add hunted indicator to spots list").
+
+## Documentation
+
+- Always update README.md and CLAUDE.md when adding or changing features, API endpoints, or UI components.
+- Keep the Project Structure section in CLAUDE.md in sync with actual file descriptions.
+
 ## Key Details
 
 - CORS allows `http://localhost:5173` (Vite dev server)
