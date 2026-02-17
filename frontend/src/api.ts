@@ -52,10 +52,21 @@ export async function getSettings(): Promise<Settings> {
   return request("/settings");
 }
 
-export async function updateSettings(operator_callsign: string): Promise<Settings> {
+export async function updateSettings(
+  operator_callsign: string,
+  flrig_host: string,
+  flrig_port: number
+): Promise<Settings> {
   return request("/settings", {
     method: "PUT",
-    body: JSON.stringify({ operator_callsign }),
+    body: JSON.stringify({ operator_callsign, flrig_host, flrig_port }),
+  });
+}
+
+export async function setRadioFrequency(frequencyKHz: string): Promise<void> {
+  await request("/radio/set-frequency", {
+    method: "POST",
+    body: JSON.stringify({ frequency_khz: frequencyKHz }),
   });
 }
 

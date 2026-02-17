@@ -1,7 +1,7 @@
 import uuid
 from datetime import date, datetime, timezone
 
-from sqlalchemy import Date, DateTime, ForeignKey, Numeric, String, UniqueConstraint
+from sqlalchemy import Date, DateTime, ForeignKey, Integer, Numeric, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -63,6 +63,8 @@ class Settings(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     operator_callsign: Mapped[str] = mapped_column(String(20), default="")
+    flrig_host: Mapped[str] = mapped_column(String(100), default="host.docker.internal")
+    flrig_port: Mapped[int] = mapped_column(Integer, default=12345)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )

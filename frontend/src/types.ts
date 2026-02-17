@@ -36,6 +36,8 @@ export interface QSOCreate {
 export interface Settings {
   id: string;
   operator_callsign: string;
+  flrig_host: string;
+  flrig_port: number;
   created_at: string;
   updated_at: string;
 }
