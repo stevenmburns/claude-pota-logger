@@ -5,25 +5,6 @@ import { Spot } from "../types";
 const BANDS = ["All", "160m", "80m", "60m", "40m", "30m", "20m", "17m", "15m", "12m", "10m", "6m", "2m"];
 const MODES = ["All", "SSB", "CW", "FT8", "FT4", "AM", "FM", "RTTY"];
 
-const FREQ_TO_BAND: Record<string, string> = {
-  "1.8": "160m", "3.5": "80m", "5.3": "60m", "7": "40m",
-  "10.1": "30m", "14": "20m", "18.1": "17m", "21": "15m",
-  "24.9": "12m", "28": "10m", "50": "6m", "144": "2m",
-};
-
-function kHzToBand(kHz: string): string {
-  const mhz = parseFloat(kHz) / 1000;
-  if (isNaN(mhz)) return "";
-  for (const [start, band] of Object.entries(FREQ_TO_BAND)) {
-    const f = parseFloat(start);
-    if (mhz >= f && mhz < f + 1) return band;
-  }
-  if (mhz >= 28 && mhz < 30) return "10m";
-  if (mhz >= 50 && mhz < 54) return "6m";
-  if (mhz >= 144 && mhz < 148) return "2m";
-  return "";
-}
-
 function kHzToMHz(kHz: string): string {
   const val = parseFloat(kHz);
   if (isNaN(val)) return kHz;
@@ -42,7 +23,7 @@ export default function SpotsList({ onSelect }: Props) {
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
 
   const fetchSpots = () => {
-    getActiveSpots()
+    getActiveSpots(bandFilter, modeFilter)
       .then(setSpots)
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -54,13 +35,9 @@ export default function SpotsList({ onSelect }: Props) {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, []);
+  }, [bandFilter, modeFilter]);
 
-  const filtered = spots.filter((s) => {
-    if (bandFilter !== "All" && kHzToBand(s.frequency) !== bandFilter) return false;
-    if (modeFilter !== "All" && s.mode.toUpperCase() !== modeFilter) return false;
-    return true;
-  }).sort((a, b) => {
+  const filtered = spots.slice().sort((a, b) => {
     const freqDiff = parseFloat(a.frequency) - parseFloat(b.frequency);
     if (freqDiff !== 0) return freqDiff;
     const actCmp = a.activator.localeCompare(b.activator);
@@ -95,7 +72,7 @@ export default function SpotsList({ onSelect }: Props) {
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
             <thead>
               <tr style={{ background: "#f5f5f5", position: "sticky", top: 0 }}>
-                <th style={thStyle}>Time</th>
+                <th style={thStyle}>UTC</th>
                 <th style={thStyle}>Freq (MHz)</th>
                 <th style={thStyle}>Mode</th>
                 <th style={thStyle}>Activator</th>
@@ -108,7 +85,7 @@ export default function SpotsList({ onSelect }: Props) {
             <tbody>
               {filtered.map((spot) => (
                 <tr key={spot.spotId} style={{ borderBottom: "1px solid #eee" }}>
-                  <td style={tdStyle}>{new Date(spot.spotTime).toLocaleTimeString()}</td>
+                  <td style={tdStyle}>{new Date(spot.spotTime + "Z").toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: false })}</td>
                   <td style={tdStyle}>{kHzToMHz(spot.frequency)}</td>
                   <td style={tdStyle}>{spot.mode}</td>
                   <td style={tdStyle}>{spot.activator}</td>
