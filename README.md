@@ -48,6 +48,20 @@ docker volume rm claude-pota-logger_pgdata
 docker compose up -d --build
 ```
 
+## Testing
+
+```bash
+# Install test dependencies (one-time)
+cd backend
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements-test.txt
+
+# Run tests (83 tests, ~2s, no Docker needed)
+pytest -v
+```
+
+Tests use in-memory SQLite — no running database required. External POTA API calls are mocked.
+
 ## Architecture
 
 | Layer | Technology | Runs in |
