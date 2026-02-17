@@ -54,6 +54,13 @@ frontend/
 - **QSO**: Linked to a hunt session; includes `park_reference` per contact. Unique constraint on `(hunt_session_id, callsign, park_reference, band)` prevents duplicate logs
 - **Settings**: Singleton storing `operator_callsign` (global, not per-session)
 
+## Environment Prerequisites
+
+- **Node 20+** is required for the frontend (Vite 6). Use `nvm use 20` before running `npm` commands.
+- **Docker and Docker Compose** are required for the backend and database.
+- **gh CLI** is required for PR workflows (`gh pr create`, `gh pr merge`).
+- Before starting work, verify the environment: `node --version` (must be 20+), `docker compose ps` (backend + db running), `gh --version` (installed and authenticated).
+
 ## Development Commands
 
 ```bash
