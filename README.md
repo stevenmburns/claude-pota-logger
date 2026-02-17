@@ -2,6 +2,8 @@
 
 A Parks on the Air (POTA) **hunter** logging application for logging contacts with park activators from home. Built with a FastAPI backend, PostgreSQL database, and React frontend.
 
+![POTA Hunter Logger screenshot](img/screenshot.png)
+
 ## Features
 
 - **Active Spots Browser** — real-time feed of active POTA activators (columns: Hunted, UTC, Freq, Mode, Activator, Location, Park, Name) sorted by freq/activator/time with server-side band/mode filtering; click a spot row to auto-fill the QSO form and focus RST Sent; spots already worked today are marked with a checkmark and green background; list refreshes immediately after logging or deleting a QSO
