@@ -4,7 +4,7 @@ A Parks on the Air (POTA) **hunter** logging application for logging contacts wi
 
 ## Features
 
-- **Active Spots Browser** — real-time feed of active POTA activators (columns: Time, Freq, Mode, Activator, Location, Park, Name) sorted by freq/activator/time with band/mode filtering; click a spot to auto-fill the QSO form
+- **Active Spots Browser** — real-time feed of active POTA activators (columns: UTC, Freq, Mode, Activator, Location, Park, Name) sorted by freq/activator/time with server-side band/mode filtering; click a spot to auto-fill the QSO form
 - **QSO Logging** — log contacts with fields: Band, Freq, Mode, Callsign, RST Sent, RST Rcvd, Park Ref (auto-detects band from frequency); QSO table columns: #, UTC, Band, Freq, Mode, Callsign, RST S, RST R, Park
 - **Park Lookup** — debounced lookup against the POTA API shows park names as you type
 - **Duplicate Prevention** — unique constraint on callsign + park + band per session (409 on duplicates)
@@ -68,4 +68,4 @@ docker compose up -d --build
 | GET | `/api/settings` | Get operator settings |
 | PUT | `/api/settings` | Update operator callsign |
 | GET | `/api/parks/{park_ref}` | Park name/location lookup |
-| GET | `/api/spots` | Active POTA activator spots |
+| GET | `/api/spots` | Active POTA activator spots (optional `band`, `mode` query params) |
