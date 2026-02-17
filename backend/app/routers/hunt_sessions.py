@@ -4,7 +4,7 @@ from datetime import date, timezone, datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import attributes, selectinload
 
 from app.database import get_db
 from app.models import HuntSession
@@ -27,7 +27,7 @@ async def get_today_session(db: AsyncSession = Depends(get_db)):
         db.add(session)
         await db.commit()
         await db.refresh(session)
-        session.qsos = []
+        attributes.set_committed_value(session, "qsos", [])
     return session
 
 
