@@ -63,6 +63,10 @@ export async function fetchParkInfo(parkRef: string): Promise<ParkInfo> {
   return request(`/parks/${parkRef}`);
 }
 
-export async function getActiveSpots(): Promise<Spot[]> {
-  return request("/spots");
+export async function getActiveSpots(band?: string, mode?: string): Promise<Spot[]> {
+  const params = new URLSearchParams();
+  if (band && band !== "All") params.set("band", band);
+  if (mode && mode !== "All") params.set("mode", mode);
+  const qs = params.toString();
+  return request(`/spots${qs ? `?${qs}` : ""}`);
 }
