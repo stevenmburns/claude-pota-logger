@@ -1,5 +1,7 @@
 # POTA Hunter Logger
 
+[![Backend Tests](https://github.com/stevenmburns/claude-pota-logger/actions/workflows/backend-tests.yml/badge.svg)](https://github.com/stevenmburns/claude-pota-logger/actions/workflows/backend-tests.yml)
+
 A Parks on the Air (POTA) **hunter** logging application for logging contacts with park activators from home. Built with a FastAPI backend, PostgreSQL database, and React frontend.
 
 ![POTA Hunter Logger screenshot](img/screenshot.png)
