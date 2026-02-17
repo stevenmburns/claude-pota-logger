@@ -90,7 +90,7 @@ export default function SpotsList({ onSelect, refreshToken }: Props) {
                   key={spot.spotId}
                   onClick={() => onSelect(spot)}
                   className="spot-row"
-                  style={{ borderBottom: "1px solid #eee", background: spot.hunted ? "#e6f4ea" : undefined, opacity: spot.hunted ? 0.7 : 1, cursor: "pointer" }}
+                  style={{ borderBottom: "1px solid #eee", background: spot.hunted ? "#e6f4ea" : "#ffffff", opacity: spot.hunted ? 0.7 : 1, cursor: "pointer" }}
                 >
                   <td style={tdStyle}>{spot.hunted ? "\u2714" : ""}</td>
                   <td style={tdStyle}>{new Date(spot.spotTime + "Z").toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: false })}</td>
