@@ -30,8 +30,20 @@ backend/
       settings.py      # Operator callsign settings (singleton)
       parks.py         # Proxy to POTA park API for park name lookup
       spots.py         # Proxy to POTA activator spots API (real-time, server-side band/mode filtering, hunted flag from today's QSOs)
+  tests/
+    conftest.py        # Async SQLite test fixtures, UUID compat, FastAPI test client
+    test_adif.py       # Unit tests for ADIF generation
+    test_band_conversion.py  # Unit tests for kHz-to-band conversion
+    test_hunt_sessions.py    # Integration tests for session endpoints
+    test_qsos.py             # Integration tests for QSO CRUD + duplicate prevention
+    test_settings.py         # Integration tests for settings endpoints
+    test_export.py           # Integration tests for ADIF export
+    test_parks.py            # Mocked POTA API park proxy tests
+    test_spots.py            # Mocked POTA API spots + hunted flag tests
   Dockerfile
   requirements.txt
+  requirements-test.txt  # Test dependencies (pytest, pytest-asyncio, aiosqlite, respx)
+  pytest.ini             # pytest configuration
 
 frontend/
   src/
@@ -82,6 +94,20 @@ docker compose down
 docker volume rm claude-pota-logger_pgdata
 docker compose up -d --build
 ```
+
+## Testing
+
+```bash
+# Install test dependencies (one-time setup)
+cd backend
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements-test.txt
+
+# Run all tests (83 tests, ~2s, no Docker needed)
+cd backend && source .venv/bin/activate && pytest -v
+```
+
+Tests use in-memory SQLite (via aiosqlite) with a UUID TypeDecorator for PostgreSQL compatibility. External POTA API calls are mocked with respx. No running database is required.
 
 ## API Endpoints
 
