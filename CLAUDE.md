@@ -45,6 +45,10 @@ backend/
   requirements-test.txt  # Test dependencies (pytest, pytest-asyncio, aiosqlite, respx)
   pytest.ini             # pytest configuration
 
+.github/
+  workflows/
+    backend-tests.yml  # CI: runs pytest on push to main and PRs (Python 3.12, in-memory SQLite)
+
 frontend/
   src/
     App.tsx            # Root component with global styles
@@ -108,6 +112,8 @@ cd backend && source .venv/bin/activate && pytest -v
 ```
 
 Tests use in-memory SQLite (via aiosqlite) with a UUID TypeDecorator for PostgreSQL compatibility. External POTA API calls are mocked with respx. No running database is required.
+
+CI runs automatically via GitHub Actions on pushes to `main` and PRs when `backend/` or the workflow file changes.
 
 ## API Endpoints
 
