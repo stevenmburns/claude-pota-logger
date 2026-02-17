@@ -1,9 +1,14 @@
 {
   "hooks": {
-    "postToolUse": [
+    "PostToolUse": [
       {
         "matcher": "Edit|Write",
-        "command": "bash -c 'if [[ \"$CLAUDE_FILE\" == *.py ]]; then cd /home/smburns/stevenmburns/claude-pota-logger && ruff check --fix \"$CLAUDE_FILE\" 2>/dev/null; fi'"
+        "hooks": [
+            {
+		"type": "command",
+		"command": "bash -c 'if [[ \"$CLAUDE_FILE\" == *.py ]]; then cd /home/smburns/stevenmburns/claude-pota-logger && ruff check --fix \"$CLAUDE_FILE\" 2>/dev/null; fi'"
+	    }
+	]
       }
     ]
   }

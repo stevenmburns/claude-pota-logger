@@ -1,4 +1,4 @@
-from datetime import date, timezone
+from datetime import datetime, timezone
 from typing import Optional
 
 import httpx
@@ -56,7 +56,7 @@ async def get_active_spots(
 
     # Build set of hunted (callsign, park, band) from today's QSOs
     hunted: set[tuple[str, str, str]] = set()
-    today = date.today()
+    today = datetime.now(timezone.utc).date()
     result = await db.execute(
         select(HuntSession)
         .options(selectinload(HuntSession.qsos))
