@@ -12,6 +12,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<HuntSessionDetail | null>(null);
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
+  const [spotsRefresh, setSpotsRefresh] = useState(0);
 
   useEffect(() => {
     getSettings()
@@ -28,6 +29,7 @@ export default function Home() {
     } else {
       getTodaySession().then(setSession).catch(console.error);
     }
+    setSpotsRefresh((n) => n + 1);
   }, [session]);
 
   useEffect(() => {
@@ -58,7 +60,7 @@ export default function Home() {
             <span>{session.qsos.length} QSOs</span>
             <ExportButton sessionId={session.id} />
           </div>
-          <SpotsList onSelect={setSelectedSpot} />
+          <SpotsList onSelect={setSelectedSpot} refreshToken={spotsRefresh} />
           <QSOForm sessionId={session.id} onCreated={loadSession} selectedSpot={selectedSpot} />
           <QSOTable sessionId={session.id} qsos={session.qsos} onDeleted={loadSession} />
         </>
