@@ -45,7 +45,7 @@ class QSOResponse(BaseModel):
 
 class SettingsCreate(BaseModel):
     operator_callsign: str
-    flrig_host: str = "host.docker.internal"
+    flrig_host: str = "localhost"
     flrig_port: int = 12345
 
 

@@ -20,7 +20,7 @@ class SetFrequencyRequest(BaseModel):
 async def set_frequency(data: SetFrequencyRequest, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Settings))
     settings = result.scalar_one_or_none()
-    host = settings.flrig_host if settings else "host.docker.internal"
+    host = settings.flrig_host if settings else "localhost"
     port = settings.flrig_port if settings else 12345
 
     freq_hz = int(float(data.frequency_khz) * 1000)

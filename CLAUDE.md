@@ -8,10 +8,10 @@ POTA Hunter Logger — a Parks on the Air (POTA) **hunter** logging application 
 
 ## Architecture
 
-- **Backend**: FastAPI (Python 3.12) with async SQLAlchemy + asyncpg, runs in Docker
+- **Backend**: FastAPI (Python 3.12) with async SQLAlchemy + asyncpg, runs directly via uvicorn (not in Docker)
 - **Database**: PostgreSQL 16, runs in Docker
 - **Frontend**: React + TypeScript + Vite, runs locally via `npm run dev`
-- Docker Compose orchestrates backend + database; frontend runs outside Docker
+- Docker Compose manages only the database; backend and frontend run directly on the host
 
 ## Project Structure
 
@@ -70,35 +70,37 @@ frontend/
 
 - **HuntSession**: One per day (unique `session_date`), auto-created on first visit
 - **QSO**: Linked to a hunt session; includes `park_reference` per contact. Unique constraint on `(hunt_session_id, callsign, park_reference, band)` prevents duplicate logs
-- **Settings**: Singleton storing `operator_callsign`, `flrig_host` (default `host.docker.internal`), and `flrig_port` (default `12345`) — global, not per-session
+- **Settings**: Singleton storing `operator_callsign`, `flrig_host` (default `localhost`), and `flrig_port` (default `12345`) — global, not per-session
 
 ## Environment Prerequisites
 
 - **Node 20+** is required for the frontend (Vite 6). Use `nvm use 20` before running `npm` commands.
-- **Docker and Docker Compose** are required for the backend and database.
+- **Docker and Docker Compose** are required for the database.
+- **Python 3.12** with dependencies in `backend/.venv` is required for the backend.
 - **gh CLI** is required for PR workflows (`gh pr create`, `gh pr merge`).
-- Before starting work, verify the environment: `node --version` (must be 20+), `docker compose ps` (backend + db running), `gh --version` (installed and authenticated).
+- Before starting work, verify the environment: `node --version` (must be 20+), `docker compose ps` (db running), `gh --version` (installed and authenticated).
 
 ## Development Commands
 
 ```bash
-# Start backend + database
+# Start database
 docker compose up -d
+
+# Start backend (runs directly, auto-reloads on code changes)
+cd backend
+DATABASE_URL=postgresql+asyncpg://pota:pota@localhost:5432/pota .venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 # Start frontend (requires Node 20+ via nvm)
 cd frontend && npm run dev
 # Frontend runs at http://localhost:5173, backend at http://localhost:8000
 
-# Rebuild backend after code changes
-docker compose up -d --build
-
-# Stop everything
+# Stop database
 docker compose down
 
-# Reset database (drops all data, recreates tables on next startup)
+# Reset database (drops all data, recreates tables on next backend startup)
 docker compose down
 docker volume rm claude-pota-logger_pgdata
-docker compose up -d --build
+docker compose up -d
 ```
 
 ## Testing
@@ -156,4 +158,4 @@ CI runs automatically via GitHub Actions on pushes to `main` and PRs when `backe
 - ADIF export uses hunter format: `SIG=POTA`, `SIG_INFO=<hunted park>`, `STATION_CALLSIGN=<operator>`
 - Active spots panel fetches from POTA API on load and auto-refreshes every 60 seconds; band/mode filtering is done server-side (backend converts kHz to band); click a spot row to auto-fill the QSO form and focus RST Sent input; click the Freq cell specifically to also tune the radio via flrig
 - Spots are annotated with a `hunted` flag (backend matches activator/park/band against today's QSOs); hunted spots display a checkmark and green background; spots list refreshes immediately after logging or deleting a QSO
-- flrig integration: backend proxies XML-RPC to flrig (default `host.docker.internal:12345`); `docker-compose.yml` includes `extra_hosts: host.docker.internal:host-gateway` so the container can reach the host; frequency in kHz is converted to Hz before calling `rig.set_vfo`; 503 returned if flrig unreachable
+- flrig integration: backend proxies XML-RPC to flrig (default `localhost:12345`); since the backend runs directly on the host, it can reach flrig/mock on localhost without any special networking; frequency in kHz is converted to Hz before calling `rig.set_vfo`; 503 returned if flrig unreachable
