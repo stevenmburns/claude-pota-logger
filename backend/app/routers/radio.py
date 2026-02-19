@@ -23,7 +23,7 @@ async def set_frequency(data: SetFrequencyRequest, db: AsyncSession = Depends(ge
     host = settings.flrig_host if settings else "localhost"
     port = settings.flrig_port if settings else 12345
 
-    freq_hz = int(float(data.frequency_khz) * 1000)
+    freq_hz = float(data.frequency_khz) * 1000
 
     def call_flrig():
         proxy = xmlrpc.client.ServerProxy(f"http://{host}:{port}")
@@ -31,6 +31,8 @@ async def set_frequency(data: SetFrequencyRequest, db: AsyncSession = Depends(ge
 
     try:
         await asyncio.to_thread(call_flrig)
+    except xmlrpc.client.Fault as e:
+        raise HTTPException(status_code=502, detail=f"flrig XML-RPC fault: {e.faultString}")
     except (ConnectionRefusedError, OSError) as e:
         raise HTTPException(status_code=503, detail=f"flrig unreachable: {e}")
 
