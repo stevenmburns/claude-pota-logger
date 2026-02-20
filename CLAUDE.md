@@ -4,14 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-POTA Hunter Logger — a Parks on the Air (POTA) **hunter** logging application with a FastAPI backend, PostgreSQL database, and React frontend. Designed for logging contacts with park activators from home (not for activating parks).
+POTA Hunter Logger — a Parks on the Air (POTA) **hunter** logging application with a FastAPI backend, SQLite database, and React frontend. Designed for logging contacts with park activators from home (not for activating parks).
 
 ## Architecture
 
-- **Backend**: FastAPI (Python 3.12) with async SQLAlchemy + asyncpg, runs directly via uvicorn (not in Docker)
-- **Database**: PostgreSQL 16, runs in Docker
+- **Backend**: FastAPI (Python 3.12) with async SQLAlchemy + aiosqlite, runs directly via uvicorn
+- **Database**: SQLite (file: `backend/pota.db`), created automatically on first backend startup
 - **Frontend**: React + TypeScript + Vite, runs locally via `npm run dev`
-- Docker Compose manages only the database; backend and frontend run directly on the host
 
 ## Project Structure
 
@@ -19,9 +18,9 @@ POTA Hunter Logger — a Parks on the Air (POTA) **hunter** logging application 
 backend/
   app/
     main.py           # FastAPI app entry point, CORS config, lifespan (auto-creates tables)
-    models.py          # SQLAlchemy ORM models (HuntSession, QSO, Settings)
+    models.py          # SQLAlchemy ORM models (HuntSession, QSO, Settings); SQLiteUUID TypeDecorator
     schemas.py         # Pydantic v2 request/response schemas
-    database.py        # Async engine + session factory
+    database.py        # Async engine + session factory (defaults to sqlite+aiosqlite:///pota.db)
     adif.py            # ADIF v3.1.4 file generation (hunter format: SIG/SIG_INFO per QSO)
     routers/
       hunt_sessions.py # Hunt session endpoints (auto-create today's, list, get)
@@ -32,7 +31,7 @@ backend/
       spots.py         # Proxy to POTA activator spots API (real-time, server-side band/mode filtering, hunted flag from today's QSOs)
       radio.py         # POST /api/radio/set-frequency — proxies XML-RPC call to flrig rig control
   tests/
-    conftest.py        # Async SQLite test fixtures, UUID compat, FastAPI test client
+    conftest.py        # Async SQLite test fixtures, FastAPI test client
     test_adif.py       # Unit tests for ADIF generation
     test_band_conversion.py  # Unit tests for kHz-to-band conversion
     test_hunt_sessions.py    # Integration tests for session endpoints
@@ -42,9 +41,8 @@ backend/
     test_parks.py            # Mocked POTA API park proxy tests
     test_spots.py            # Mocked POTA API spots + hunted flag tests
     test_radio.py            # Mocked flrig XML-RPC tests for set-frequency endpoint
-  Dockerfile
   requirements.txt
-  requirements-test.txt  # Test dependencies (pytest, pytest-asyncio, aiosqlite, respx)
+  requirements-test.txt  # Test dependencies (pytest, pytest-asyncio, respx); inherits requirements.txt
   pytest.ini             # pytest configuration
 
 .github/
@@ -75,32 +73,23 @@ frontend/
 ## Environment Prerequisites
 
 - **Node 20+** is required for the frontend (Vite 6). Use `nvm use 20` before running `npm` commands.
-- **Docker and Docker Compose** are required for the database.
 - **Python 3.12** with dependencies in `backend/.venv` is required for the backend.
 - **gh CLI** is required for PR workflows (`gh pr create`, `gh pr merge`).
-- Before starting work, verify the environment: `node --version` (must be 20+), `docker compose ps` (db running), `gh --version` (installed and authenticated).
+- Before starting work, verify the environment: `node --version` (must be 20+), `gh --version` (installed and authenticated).
 
 ## Development Commands
 
 ```bash
-# Start database
-docker compose up -d
-
-# Start backend (runs directly, auto-reloads on code changes)
+# Start backend (runs directly, auto-reloads on code changes; creates backend/pota.db on first run)
 cd backend
-DATABASE_URL=postgresql+asyncpg://pota:pota@localhost:5432/pota .venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+.venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 # Start frontend (requires Node 20+ via nvm)
 cd frontend && npm run dev
 # Frontend runs at http://localhost:5173, backend at http://localhost:8000
 
-# Stop database
-docker compose down
-
-# Reset database (drops all data, recreates tables on next backend startup)
-docker compose down
-docker volume rm claude-pota-logger_pgdata
-docker compose up -d
+# Reset database (drops all data, recreates on next backend startup)
+rm backend/pota.db
 ```
 
 ## Testing
@@ -111,11 +100,11 @@ cd backend
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements-test.txt
 
-# Run all tests (83 tests, ~2s, no Docker needed)
+# Run all tests (~2s, no database needed)
 cd backend && source .venv/bin/activate && pytest -v
 ```
 
-Tests use in-memory SQLite (via aiosqlite) with a UUID TypeDecorator for PostgreSQL compatibility. External POTA API calls are mocked with respx. No running database is required.
+Tests use in-memory SQLite (via aiosqlite). External POTA API calls are mocked with respx. No running database is required.
 
 CI runs automatically via GitHub Actions on pushes to `main` and PRs when `backend/` or the workflow file changes.
 
@@ -152,7 +141,7 @@ CI runs automatically via GitHub Actions on pushes to `main` and PRs when `backe
 - CORS allows `http://localhost:5173` (Vite dev server)
 - Tables are auto-created on backend startup (no migrations yet)
 - Node 20 is required; use `nvm use 20` (nvm is installed)
-- Database credentials: `pota/pota` on `localhost:5432`, database `pota`
+- Database: SQLite file at `backend/pota.db`; created automatically on first backend startup
 - First visit prompts for operator callsign; stored globally in Settings table
 - Park reference input does a debounced lookup against the POTA API to show park names
 - ADIF export uses hunter format: `SIG=POTA`, `SIG_INFO=<hunted park>`, `STATION_CALLSIGN=<operator>`

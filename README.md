@@ -2,7 +2,7 @@
 
 [![Backend Tests](https://github.com/stevenmburns/claude-pota-logger/actions/workflows/backend-tests.yml/badge.svg)](https://github.com/stevenmburns/claude-pota-logger/actions/workflows/backend-tests.yml)
 
-A Parks on the Air (POTA) **hunter** logging application for logging contacts with park activators from home. Built with a FastAPI backend, PostgreSQL database, and React frontend.
+A Parks on the Air (POTA) **hunter** logging application for logging contacts with park activators from home. Built with a FastAPI backend, SQLite database, and React frontend.
 
 ![POTA Hunter Logger screenshot](img/screenshot.png)
 
@@ -18,16 +18,17 @@ A Parks on the Air (POTA) **hunter** logging application for logging contacts wi
 
 ## Prerequisites
 
-- Docker and Docker Compose
 - Node.js 20+ (via nvm: `nvm use 20`)
+- Python 3.12
 
 ## Quick Start
 
 ```bash
-# Start backend + database
-docker compose up -d
+# Start backend (creates backend/pota.db automatically on first run)
+cd backend
+.venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
-# Start frontend
+# Start frontend (in a separate terminal)
 cd frontend && npm run dev
 ```
 
@@ -39,16 +40,12 @@ On first visit, you'll be prompted to enter your operator callsign.
 ## Development
 
 ```bash
-# Rebuild backend after code changes
-docker compose up -d --build
-
-# Stop everything
-docker compose down
+# Rebuild backend after dependency changes
+cd backend && pip install -r requirements.txt
 
 # Reset database (drops all data)
-docker compose down
-docker volume rm claude-pota-logger_pgdata
-docker compose up -d --build
+rm backend/pota.db
+# Restart backend — pota.db is recreated automatically
 ```
 
 ## Testing
@@ -59,7 +56,7 @@ cd backend
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements-test.txt
 
-# Run tests (88 tests, ~2s, no Docker needed)
+# Run tests (no running database required)
 pytest -v
 ```
 
@@ -69,8 +66,8 @@ Tests use in-memory SQLite — no running database required. External POTA API c
 
 | Layer | Technology | Runs in |
 |-------|-----------|---------|
-| Backend | FastAPI (Python 3.12), async SQLAlchemy + asyncpg | Docker |
-| Database | PostgreSQL 16 | Docker |
+| Backend | FastAPI (Python 3.12), async SQLAlchemy + aiosqlite | Local (uvicorn) |
+| Database | SQLite (file: `backend/pota.db`) | Local (file) |
 | Frontend | React + TypeScript + Vite | Local (npm) |
 
 ## API Endpoints
