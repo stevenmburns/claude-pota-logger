@@ -88,4 +88,4 @@ Tests use in-memory SQLite — no running database required. External POTA API c
 | PUT | `/api/settings` | Update operator callsign, flrig host/port |
 | GET | `/api/parks/{park_ref}` | Park name/location lookup |
 | GET | `/api/spots` | Active POTA activator spots (optional `band`, `mode` query params); includes `hunted` flag |
-| POST | `/api/radio/set-frequency` | Set radio frequency via flrig XML-RPC; body: `{ frequency_khz: string }` |
+| POST | `/api/radio/set-frequency` | Set radio frequency via flrig XML-RPC; body: `{ frequency_khz: number }` |

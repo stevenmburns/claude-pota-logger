@@ -134,7 +134,7 @@ CI runs automatically via GitHub Actions on pushes to `main` and PRs when `backe
 | PUT | `/api/settings` | Update operator callsign, flrig host/port |
 | GET | `/api/parks/{park_ref}` | Proxy to POTA park API (returns park name/location) |
 | GET | `/api/spots` | Proxy to POTA activator spots API; optional `band` and `mode` query params for server-side filtering; each spot includes `hunted` flag based on today's QSOs |
-| POST | `/api/radio/set-frequency` | Set radio frequency via flrig XML-RPC; body: `{ frequency_khz: string }`; returns 503 if flrig unreachable |
+| POST | `/api/radio/set-frequency` | Set radio frequency via flrig XML-RPC; body: `{ frequency_khz: number }`; returns 503 if flrig unreachable |
 
 ## Git Workflow
 
