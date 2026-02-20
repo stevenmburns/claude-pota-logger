@@ -9,8 +9,7 @@ from app.schemas import SettingsCreate, SettingsResponse
 router = APIRouter(prefix="/api/settings", tags=["settings"])
 
 
-@router.get("", response_model=SettingsResponse)
-async def get_settings(db: AsyncSession = Depends(get_db)):
+async def get_or_create_settings(db: AsyncSession) -> Settings:
     result = await db.execute(select(Settings))
     settings = result.scalar_one_or_none()
     if not settings:
@@ -19,6 +18,11 @@ async def get_settings(db: AsyncSession = Depends(get_db)):
         await db.commit()
         await db.refresh(settings)
     return settings
+
+
+@router.get("", response_model=SettingsResponse)
+async def get_settings(db: AsyncSession = Depends(get_db)):
+    return await get_or_create_settings(db)
 
 
 @router.put("", response_model=SettingsResponse)

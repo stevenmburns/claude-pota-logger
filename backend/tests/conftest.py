@@ -1,6 +1,7 @@
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
+import httpx
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -47,8 +48,10 @@ async def client(_test_engine) -> AsyncGenerator[AsyncClient, None]:
     _app.router.lifespan_context = _test_lifespan
     _app.dependency_overrides[get_db] = _override_get_db
 
-    transport = ASGITransport(app=_app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        yield ac
+    async with httpx.AsyncClient() as http_client:
+        _app.state.http_client = http_client
+        transport = ASGITransport(app=_app)
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            yield ac
 
     _app.dependency_overrides.clear()

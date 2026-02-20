@@ -26,7 +26,7 @@ def generate_adif(operator_callsign: str, qsos: list[QSO]) -> str:
         record.append(_adif_field("QSO_DATE", qso.timestamp.strftime("%Y%m%d")))
         record.append(_adif_field("TIME_ON", qso.timestamp.strftime("%H%M%S")))
         record.append(_adif_field("BAND", qso.band.lower()))
-        freq_str = f"{float(qso.frequency):.4f}"
+        freq_str = f"{qso.frequency:.4f}"
         record.append(_adif_field("FREQ", freq_str))
         record.append(_adif_field("MODE", qso.mode.upper()))
         record.append(_adif_field("RST_SENT", qso.rst_sent))

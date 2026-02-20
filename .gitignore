@@ -7,3 +7,5 @@ backups/
 backend/pota.db
 backend/pota.db-shm
 backend/pota.db-wal
+*.cover
+.coverage
