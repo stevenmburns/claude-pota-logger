@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/radio", tags=["radio"])
 
 
 class SetFrequencyRequest(BaseModel):
-    frequency_khz: str
+    frequency_khz: float
 
 
 @router.post("/set-frequency")
@@ -23,7 +23,7 @@ async def set_frequency(data: SetFrequencyRequest, db: AsyncSession = Depends(ge
     host = settings.flrig_host if settings else "localhost"
     port = settings.flrig_port if settings else 12345
 
-    freq_hz = float(data.frequency_khz) * 1000
+    freq_hz = data.frequency_khz * 1000
 
     def call_flrig():
         proxy = xmlrpc.client.ServerProxy(f"http://{host}:{port}")
