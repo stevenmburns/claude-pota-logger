@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 
+import httpx
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -12,7 +13,9 @@ from app.routers import export, hunt_sessions, parks, qsos, radio, settings, spo
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    yield
+    async with httpx.AsyncClient() as client:
+        app.state.http_client = client
+        yield
 
 
 app = FastAPI(title="POTA Logger", lifespan=lifespan)

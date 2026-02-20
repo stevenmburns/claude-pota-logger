@@ -1,50 +1,52 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-import httpx
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from ..database import get_db
-from ..models import HuntSession
+from app.database import get_db
+from app.models import HuntSession
 
 router = APIRouter(prefix="/api/spots", tags=["spots"])
 
-FREQ_TO_BAND: dict[str, str] = {
-    "1.8": "160m", "3.5": "80m", "5.3": "60m", "7": "40m",
-    "10.1": "30m", "14": "20m", "18.1": "17m", "21": "15m",
-    "24.9": "12m", "28": "10m", "50": "6m", "144": "2m",
-}
+BAND_RANGES: list[tuple[float, float, str]] = [
+    (1800, 2000, "160m"),
+    (3500, 4000, "80m"),
+    (5330, 5406, "60m"),
+    (7000, 7300, "40m"),
+    (10100, 10150, "30m"),
+    (14000, 14350, "20m"),
+    (18068, 18168, "17m"),
+    (21000, 21450, "15m"),
+    (24890, 24990, "12m"),
+    (28000, 30000, "10m"),
+    (50000, 54000, "6m"),
+    (144000, 148000, "2m"),
+]
 
 
 def khz_to_band(khz: str) -> str:
     try:
-        mhz = float(khz) / 1000
+        freq = float(khz)
     except (ValueError, TypeError):
         return ""
-    for start, band in FREQ_TO_BAND.items():
-        f = float(start)
-        if f <= mhz < f + 1:
+    for low, high, band in BAND_RANGES:
+        if low <= freq < high:
             return band
-    if 28 <= mhz < 30:
-        return "10m"
-    if 50 <= mhz < 54:
-        return "6m"
-    if 144 <= mhz < 148:
-        return "2m"
     return ""
 
 
 @router.get("")
 async def get_active_spots(
+    request: Request,
     band: Optional[str] = Query(None),
     mode: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
-    async with httpx.AsyncClient() as client:
-        resp = await client.get("https://api.pota.app/spot/activator", timeout=10.0)
+    client = request.app.state.http_client
+    resp = await client.get("https://api.pota.app/spot/activator", timeout=10.0)
     if resp.status_code != 200:
         raise HTTPException(status_code=502, detail="Failed to fetch spots")
     spots = resp.json()

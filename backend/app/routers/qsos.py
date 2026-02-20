@@ -6,27 +6,18 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import HuntSession, QSO
+from app.models import QSO
+from app.routers.hunt_sessions import get_hunt_session_or_404
 from app.schemas import QSOCreate, QSOResponse
 
 router = APIRouter(prefix="/api/hunt-sessions/{session_id}/qsos", tags=["qsos"])
-
-
-async def _get_session(session_id: uuid.UUID, db: AsyncSession) -> HuntSession:
-    result = await db.execute(
-        select(HuntSession).where(HuntSession.id == session_id)
-    )
-    session = result.scalar_one_or_none()
-    if not session:
-        raise HTTPException(status_code=404, detail="Hunt session not found")
-    return session
 
 
 @router.post("", response_model=QSOResponse, status_code=201)
 async def create_qso(
     session_id: uuid.UUID, data: QSOCreate, db: AsyncSession = Depends(get_db)
 ):
-    await _get_session(session_id, db)
+    await get_hunt_session_or_404(session_id, db)
     qso = QSO(hunt_session_id=session_id, **data.model_dump())
     db.add(qso)
     try:
@@ -43,7 +34,7 @@ async def create_qso(
 
 @router.get("", response_model=list[QSOResponse])
 async def list_qsos(session_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    await _get_session(session_id, db)
+    await get_hunt_session_or_404(session_id, db)
     result = await db.execute(
         select(QSO).where(QSO.hunt_session_id == session_id).order_by(QSO.timestamp)
     )
