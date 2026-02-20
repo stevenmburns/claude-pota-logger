@@ -26,10 +26,16 @@ async def update_settings(data: SettingsCreate, db: AsyncSession = Depends(get_d
     result = await db.execute(select(Settings))
     settings = result.scalar_one_or_none()
     if not settings:
-        settings = Settings(operator_callsign=data.operator_callsign)
+        settings = Settings(
+            operator_callsign=data.operator_callsign,
+            flrig_host=data.flrig_host,
+            flrig_port=data.flrig_port,
+        )
         db.add(settings)
     else:
         settings.operator_callsign = data.operator_callsign
+        settings.flrig_host = data.flrig_host
+        settings.flrig_port = data.flrig_port
     await db.commit()
     await db.refresh(settings)
     return settings

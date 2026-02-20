@@ -45,11 +45,15 @@ class QSOResponse(BaseModel):
 
 class SettingsCreate(BaseModel):
     operator_callsign: str
+    flrig_host: str = "localhost"
+    flrig_port: int = 12345
 
 
 class SettingsResponse(BaseModel):
     id: uuid.UUID
     operator_callsign: str
+    flrig_host: str
+    flrig_port: int
     created_at: datetime
     updated_at: datetime
 

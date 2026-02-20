@@ -8,7 +8,8 @@ A Parks on the Air (POTA) **hunter** logging application for logging contacts wi
 
 ## Features
 
-- **Active Spots Browser** — real-time feed of active POTA activators (columns: Hunted, UTC, Freq, Mode, Activator, Location, Park, Name) sorted by freq/activator/time with server-side band/mode filtering; click a spot row to auto-fill the QSO form and focus RST Sent; spots already worked today are marked with a checkmark and green background; list refreshes immediately after logging or deleting a QSO
+- **Active Spots Browser** — real-time feed of active POTA activators (columns: Hunted, UTC, Freq, Mode, Activator, Location, Park, Name) sorted by freq/activator/time with server-side band/mode filtering; click a spot row to auto-fill the QSO form and focus RST Sent; click the Freq cell to also tune the radio via flrig; spots already worked today are marked with a checkmark and green background; list refreshes immediately after logging or deleting a QSO
+- **flrig Frequency Control** — clicking a spot's frequency cell sends the frequency to flrig via XML-RPC; flrig host/port configurable in Settings (defaults: `localhost:12345`)
 - **QSO Logging** — log contacts with fields: Band, Freq, Mode, Callsign, RST Sent, RST Rcvd, Park Ref (auto-detects band from frequency); QSO table columns: #, UTC, Band, Freq, Mode, Callsign, RST S, RST R, Park
 - **Park Lookup** — debounced lookup against the POTA API shows park names as you type
 - **Duplicate Prevention** — unique constraint on callsign + park + band per session (409 on duplicates)
@@ -58,7 +59,7 @@ cd backend
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements-test.txt
 
-# Run tests (83 tests, ~2s, no Docker needed)
+# Run tests (88 tests, ~2s, no Docker needed)
 pytest -v
 ```
 
@@ -84,6 +85,7 @@ Tests use in-memory SQLite — no running database required. External POTA API c
 | DELETE | `/api/hunt-sessions/{id}/qsos/{qso_id}` | Delete a QSO |
 | GET | `/api/hunt-sessions/{id}/export` | Download ADIF file |
 | GET | `/api/settings` | Get operator settings |
-| PUT | `/api/settings` | Update operator callsign |
+| PUT | `/api/settings` | Update operator callsign, flrig host/port |
 | GET | `/api/parks/{park_ref}` | Park name/location lookup |
 | GET | `/api/spots` | Active POTA activator spots (optional `band`, `mode` query params); includes `hunted` flag |
+| POST | `/api/radio/set-frequency` | Set radio frequency via flrig XML-RPC; body: `{ frequency_khz: string }` |

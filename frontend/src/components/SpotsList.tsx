@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { getActiveSpots } from "../api";
+import { getActiveSpots, setRadioFrequency } from "../api";
 import { Spot } from "../types";
 
 const BANDS = ["All", "160m", "80m", "60m", "40m", "30m", "20m", "17m", "15m", "12m", "10m", "6m", "2m"];
@@ -21,7 +21,9 @@ export default function SpotsList({ onSelect, refreshToken }: Props) {
   const [loading, setLoading] = useState(true);
   const [bandFilter, setBandFilter] = useState("All");
   const [modeFilter, setModeFilter] = useState("All");
+  const [radioStatus, setRadioStatus] = useState<{ message: string; error: boolean } | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const statusTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   const fetchSpots = () => {
     getActiveSpots(bandFilter, modeFilter)
@@ -37,6 +39,17 @@ export default function SpotsList({ onSelect, refreshToken }: Props) {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [bandFilter, modeFilter, refreshToken]);
+
+  const handleFreqClick = async (spot: Spot) => {
+    try {
+      await setRadioFrequency(spot.frequency);
+      setRadioStatus({ message: `Tuned to ${kHzToMHz(spot.frequency)} MHz`, error: false });
+    } catch (err: any) {
+      setRadioStatus({ message: err.message || "Failed to set frequency", error: true });
+    }
+    if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+    statusTimerRef.current = setTimeout(() => setRadioStatus(null), 3000);
+  };
 
   const filtered = spots.slice().sort((a, b) => {
     const freqDiff = parseFloat(a.frequency) - parseFloat(b.frequency);
@@ -66,6 +79,11 @@ export default function SpotsList({ onSelect, refreshToken }: Props) {
         <span style={{ fontSize: "0.8rem", color: "#666" }}>
           {filtered.length} spot{filtered.length !== 1 ? "s" : ""}
         </span>
+        {radioStatus && (
+          <span style={{ fontSize: "0.8rem", color: radioStatus.error ? "#c00" : "#1a6", fontWeight: 500 }}>
+            {radioStatus.message}
+          </span>
+        )}
       </div>
       {loading ? (
         <p>Loading spots...</p>
@@ -94,7 +112,12 @@ export default function SpotsList({ onSelect, refreshToken }: Props) {
                 >
                   <td style={tdStyle}>{spot.hunted ? "\u2714" : ""}</td>
                   <td style={tdStyle}>{new Date(spot.spotTime + "Z").toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: false })}</td>
-                  <td style={tdStyle}>{kHzToMHz(spot.frequency)}</td>
+                  <td
+                    style={{ ...tdStyle, cursor: "pointer", textDecoration: "underline", color: "#1a6" }}
+                    onClick={() => handleFreqClick(spot)}
+                  >
+                    {kHzToMHz(spot.frequency)}
+                  </td>
                   <td style={tdStyle}>{spot.mode}</td>
                   <td style={tdStyle}>{spot.activator}</td>
                   <td style={tdStyle}>{spot.locationDesc}</td>
