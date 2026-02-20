@@ -10,7 +10,7 @@ interface Props {
 
 export default function SettingsForm({ onSaved, currentSettings, onCancel }: Props) {
   const [callsign, setCallsign] = useState(currentSettings?.operator_callsign ?? "");
-  const [flrigHost, setFlrigHost] = useState(currentSettings?.flrig_host ?? "host.docker.internal");
+  const [flrigHost, setFlrigHost] = useState(currentSettings?.flrig_host ?? "localhost");
   const [flrigPort, setFlrigPort] = useState(currentSettings?.flrig_port ?? 12345);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,7 +47,7 @@ export default function SettingsForm({ onSaved, currentSettings, onCancel }: Pro
           <input
             value={flrigHost}
             onChange={(e) => setFlrigHost(e.target.value)}
-            placeholder="host.docker.internal"
+            placeholder="localhost"
           />
         </label>
         <label>

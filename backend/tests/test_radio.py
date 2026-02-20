@@ -1,5 +1,6 @@
 """Tests for POST /api/radio/set-frequency (flrig XML-RPC proxy)."""
 
+import xmlrpc.client
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -21,7 +22,9 @@ async def test_set_frequency_success(client: AsyncClient):
     data = resp.json()
     assert data["status"] == "ok"
     assert data["frequency_hz"] == 14074000
-    mock_proxy.rig.set_vfo.assert_called_once_with(14074000)
+    freq_arg = mock_proxy.rig.set_vfo.call_args.args[0]
+    assert isinstance(freq_arg, float), "flrig requires a double (float), not int"
+    assert freq_arg == 14074000.0
 
 
 async def test_set_frequency_integer_conversion(client: AsyncClient):
@@ -36,7 +39,24 @@ async def test_set_frequency_integer_conversion(client: AsyncClient):
 
     assert resp.status_code == 200
     assert resp.json()["frequency_hz"] == 7074500
-    mock_proxy.rig.set_vfo.assert_called_once_with(7074500)
+    freq_arg = mock_proxy.rig.set_vfo.call_args.args[0]
+    assert isinstance(freq_arg, float), "flrig requires a double (float), not int"
+    assert freq_arg == 7074500.0
+
+
+async def test_set_frequency_xml_rpc_fault(client: AsyncClient):
+    """XML-RPC faults from flrig (e.g. type error) return 502, not 500."""
+    with patch("xmlrpc.client.ServerProxy") as mock_proxy_cls:
+        mock_proxy = MagicMock()
+        mock_proxy.rig.set_vfo.side_effect = xmlrpc.client.Fault(-1, "type error")
+        mock_proxy_cls.return_value = mock_proxy
+
+        resp = await client.post(
+            "/api/radio/set-frequency", json={"frequency_khz": "14074.0"}
+        )
+
+    assert resp.status_code == 502
+    assert "type error" in resp.json()["detail"]
 
 
 async def test_set_frequency_flrig_unreachable(client: AsyncClient):
@@ -86,3 +106,4 @@ async def test_set_frequency_uses_settings_host_port(client: AsyncClient):
 
     assert resp.status_code == 200
     mock_proxy_cls.assert_called_once_with("http://192.168.1.10:54321")
+    mock_proxy.rig.set_vfo.assert_called_once_with(14025000.0)

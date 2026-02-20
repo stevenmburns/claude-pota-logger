@@ -9,7 +9,7 @@ A Parks on the Air (POTA) **hunter** logging application for logging contacts wi
 ## Features
 
 - **Active Spots Browser** — real-time feed of active POTA activators (columns: Hunted, UTC, Freq, Mode, Activator, Location, Park, Name) sorted by freq/activator/time with server-side band/mode filtering; click a spot row to auto-fill the QSO form and focus RST Sent; click the Freq cell to also tune the radio via flrig; spots already worked today are marked with a checkmark and green background; list refreshes immediately after logging or deleting a QSO
-- **flrig Frequency Control** — clicking a spot's frequency cell sends the frequency to flrig via XML-RPC; flrig host/port configurable in Settings (defaults: `host.docker.internal:12345`)
+- **flrig Frequency Control** — clicking a spot's frequency cell sends the frequency to flrig via XML-RPC; flrig host/port configurable in Settings (defaults: `localhost:12345`)
 - **QSO Logging** — log contacts with fields: Band, Freq, Mode, Callsign, RST Sent, RST Rcvd, Park Ref (auto-detects band from frequency); QSO table columns: #, UTC, Band, Freq, Mode, Callsign, RST S, RST R, Park
 - **Park Lookup** — debounced lookup against the POTA API shows park names as you type
 - **Duplicate Prevention** — unique constraint on callsign + park + band per session (409 on duplicates)
