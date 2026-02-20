@@ -15,6 +15,9 @@ POTA Hunter Logger — a Parks on the Air (POTA) **hunter** logging application 
 ## Project Structure
 
 ```
+dev.sh        # Bash script: starts backend + frontend together (Ctrl+C kills both)
+package.json  # Root npm config: `npm run dev` runs both via concurrently (requires venv active)
+
 backend/
   app/
     main.py           # FastAPI app entry point, CORS config, lifespan (auto-creates tables)
@@ -80,11 +83,17 @@ frontend/
 ## Development Commands
 
 ```bash
-# Start backend (runs directly, auto-reloads on code changes; creates backend/pota.db on first run)
+# Start both backend + frontend together (bash script)
+./dev.sh
+
+# Start both backend + frontend together (npm, with labeled/colored output; requires venv active)
+npm run dev
+
+# Start backend only (auto-reloads on code changes; creates backend/pota.db on first run)
 cd backend
 .venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
-# Start frontend (requires Node 20+ via nvm)
+# Start frontend only (requires Node 20+ via nvm)
 cd frontend && npm run dev
 # Frontend runs at http://localhost:5173, backend at http://localhost:8000
 

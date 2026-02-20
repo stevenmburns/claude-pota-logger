@@ -23,6 +23,18 @@ A Parks on the Air (POTA) **hunter** logging application for logging contacts wi
 
 ## Quick Start
 
+**Option 1 — single command (bash):**
+```bash
+./dev.sh
+```
+
+**Option 2 — single command (npm, with labeled output):**
+```bash
+# Requires the venv to be active
+npm run dev
+```
+
+**Option 3 — separate terminals:**
 ```bash
 # Start backend (creates backend/pota.db automatically on first run)
 cd backend
