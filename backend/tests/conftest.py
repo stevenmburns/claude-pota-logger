@@ -1,55 +1,13 @@
-import sqlite3
-import uuid
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 import pytest
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy import String, TypeDecorator
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
 from app.models import Base
 from app.database import get_db
-
-# ---------------------------------------------------------------------------
-# Make SQLite understand Python uuid.UUID objects at the driver level
-# ---------------------------------------------------------------------------
-sqlite3.register_adapter(uuid.UUID, lambda u: str(u))
-sqlite3.register_converter("UUID", lambda b: uuid.UUID(b.decode()))
-
-
-# ---------------------------------------------------------------------------
-# TypeDecorator that stores UUIDs as strings in SQLite but accepts uuid.UUID
-# objects in queries (converts both directions)
-# ---------------------------------------------------------------------------
-class SQLiteUUID(TypeDecorator):
-    impl = String(36)
-    cache_ok = True
-
-    def process_bind_param(self, value, dialect):
-        if value is not None:
-            return str(value)
-        return value
-
-    def process_result_value(self, value, dialect):
-        if value is not None:
-            return str(value)  # keep as string to match what app returns
-        return value
-
-
-# ---------------------------------------------------------------------------
-# Patch PostgreSQL UUID columns to use our SQLite-friendly type
-# ---------------------------------------------------------------------------
-
-def _patch_uuid_columns():
-    for table in Base.metadata.tables.values():
-        for col in table.columns:
-            if hasattr(col.type, "__class__") and col.type.__class__.__name__ == "UUID":
-                col.type = SQLiteUUID()
-
-
-_patch_uuid_columns()
 
 TEST_DATABASE_URL = "sqlite+aiosqlite://"
 

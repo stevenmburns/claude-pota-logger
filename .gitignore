@@ -4,3 +4,6 @@ dist/
 __pycache__/
 .env
 backups/
+backend/pota.db
+backend/pota.db-shm
+backend/pota.db-wal
