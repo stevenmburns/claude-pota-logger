@@ -18,10 +18,15 @@ A Parks on the Air (POTA) **hunter** logging application for logging contacts wi
 
 ## Prerequisites
 
-- Node.js 20+ (via nvm: `nvm use 20`)
+- Node.js 20+
 - Python 3.12
 
+**macOS/Linux:** install Node via nvm (`nvm use 20`)
+**Windows:** install Node 20 directly from [nodejs.org](https://nodejs.org) or use [nvm-windows](https://github.com/coreybutler/nvm-windows)
+
 ## Quick Start
+
+### macOS/Linux
 
 **Option 1 — single command (bash):**
 ```bash
@@ -30,18 +35,39 @@ A Parks on the Air (POTA) **hunter** logging application for logging contacts wi
 
 **Option 2 — single command (npm, with labeled output):**
 ```bash
-# Requires the venv to be active
+# Activate the venv first, then:
 npm run dev
 ```
 
 **Option 3 — separate terminals:**
 ```bash
-# Start backend (creates backend/pota.db automatically on first run)
-cd backend
-.venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+# Backend
+cd backend && .venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
-# Start frontend (in a separate terminal)
+# Frontend (separate terminal)
 cd frontend && npm run dev
+```
+
+### Windows
+
+`dev.sh` does not work on Windows. Use `npm run dev` or start the processes separately:
+
+**Option 1 — single command (npm, with labeled output):**
+```powershell
+# Activate the venv first, then:
+npm run dev
+```
+
+**Option 2 — separate terminals:**
+```powershell
+# Backend
+cd backend
+.venv\Scripts\activate
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+# Frontend (separate terminal)
+cd frontend
+npm run dev
 ```
 
 - Frontend: http://localhost:5173
@@ -51,24 +77,40 @@ On first visit, you'll be prompted to enter your operator callsign.
 
 ## Development
 
+**macOS/Linux:**
 ```bash
 # Rebuild backend after dependency changes
 cd backend && pip install -r requirements.txt
 
 # Reset database (drops all data)
 rm backend/pota.db
-# Restart backend — pota.db is recreated automatically
+```
+
+**Windows:**
+```powershell
+# Rebuild backend after dependency changes
+cd backend && pip install -r requirements.txt
+
+# Reset database (drops all data)
+del backend\pota.db
 ```
 
 ## Testing
 
+**macOS/Linux:**
 ```bash
-# Install test dependencies (one-time)
 cd backend
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements-test.txt
+pytest -v
+```
 
-# Run tests (no running database required)
+**Windows:**
+```powershell
+cd backend
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements-test.txt
 pytest -v
 ```
 
