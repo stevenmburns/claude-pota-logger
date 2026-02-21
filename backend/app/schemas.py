@@ -1,7 +1,7 @@
 import uuid
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 
 class HuntSessionResponse(BaseModel):
@@ -24,7 +24,6 @@ class QSOCreate(BaseModel):
     mode: str
     rst_sent: str
     rst_received: str
-    timestamp: datetime
 
 
 class QSOResponse(BaseModel):
@@ -41,6 +40,13 @@ class QSOResponse(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+    @field_validator("timestamp", "created_at", mode="before")
+    @classmethod
+    def ensure_utc(cls, v: datetime) -> datetime:
+        if isinstance(v, datetime) and v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)
+        return v
 
 
 class SettingsCreate(BaseModel):

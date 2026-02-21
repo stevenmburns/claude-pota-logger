@@ -115,7 +115,6 @@ export default function QSOForm({ sessionId, onCreated, selectedSpot }: Props) {
       mode: mode.toUpperCase(),
       rst_sent: rstSent,
       rst_received: rstRecv,
-      timestamp: new Date().toISOString(),
     };
     try {
       await createQSO(sessionId, data);

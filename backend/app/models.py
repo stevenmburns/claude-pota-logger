@@ -58,7 +58,9 @@ class QSO(Base):
     mode: Mapped[str] = mapped_column(String(10))
     rst_sent: Mapped[str] = mapped_column(String(10))
     rst_received: Mapped[str] = mapped_column(String(10))
-    timestamp: Mapped[datetime] = mapped_column(DateTime())
+    timestamp: Mapped[datetime] = mapped_column(
+        DateTime(), default=lambda: datetime.now(timezone.utc)
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(), default=lambda: datetime.now(timezone.utc)
     )

@@ -16,7 +16,6 @@ QSO_DATA = {
     "mode": "FT8",
     "rst_sent": "59",
     "rst_received": "59",
-    "timestamp": "2025-06-15T18:30:00Z",
 }
 
 
@@ -33,6 +32,16 @@ async def test_create_qso(client: AsyncClient):
     assert data["callsign"] == "W1AW"
     assert data["park_reference"] == "K-0001"
     assert data["band"] == "20m"
+
+
+async def test_qso_timestamp_is_utc(client: AsyncClient):
+    """Timestamp returned in response must carry UTC timezone so browsers parse it correctly."""
+    sid = await _get_session_id(client)
+    resp = await client.post(f"/api/hunt-sessions/{sid}/qsos", json=QSO_DATA)
+    assert resp.status_code == 201
+    ts = resp.json()["timestamp"]
+    # Must end with Z or +00:00 so JavaScript new Date() treats it as UTC
+    assert ts.endswith("Z") or ts.endswith("+00:00"), f"timestamp lacks UTC indicator: {ts}"
 
 
 async def test_duplicate_qso_returns_409(client: AsyncClient):
