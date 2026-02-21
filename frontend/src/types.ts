@@ -30,7 +30,6 @@ export interface QSOCreate {
   mode: string;
   rst_sent: string;
   rst_received: string;
-  timestamp: string;
 }
 
 export interface Settings {
