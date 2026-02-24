@@ -9,3 +9,4 @@ backend/pota.db-shm
 backend/pota.db-wal
 *.cover
 .coverage
+*,cover
